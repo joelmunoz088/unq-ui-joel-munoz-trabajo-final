@@ -1,75 +1,42 @@
-# React + TypeScript + Vite
+# Palabras Encadenadas — Trabajo Final Integrador (UIs - UNQ)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web desarrollada en **React + TypeScript** con **Vite** para el Trabajo Final Integrador de Construcción de Interfaces de Usuario (UNQ).
 
-Currently, two official plugins are available:
+## Descripción del juego
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+El objetivo es formar la cadena más larga posible de palabras válidas en español antes de que se agote el tiempo:
 
-## React Compiler
+- La primera palabra puede ser cualquier palabra válida en español.
+- A partir de la segunda palabra, cada nueva palabra debe comenzar con la última letra de la palabra anterior (ignorando tildes) y no haberse repetido en la partida.
+- Cada letra de una palabra válida suma **1 punto**.
+- Cada turno dura **15 segundos** (comienza al ingresar la primera palabra válida y se reinicia a 15s con cada acierto).
+- Incluye reinicio de partida, diseño responsive y un **Top 10 de mejores puntajes** persistido en `localStorage`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Requisitos previos
 
-## Expanding the ESLint configuration
+- [Node.js](https://nodejs.org/) (versión 18 o superior)
+- npm
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Descarga, instalación y ejecución local
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Clonar el repositorio:
+   ```bash
+   git clone [https://github.com/joelmunoz088/unq-ui-joel-munoz-trabajo-final.git](https://github.com/joelmunoz088/unq-ui-joel-munoz-trabajo-final.git)
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2. Ingresar al directorio del proyecto:
+   ```bash
+   cd unq-ui-joel-munoz-trabajo-final
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+3. Instalar las dependencias:
+   ```bash
+   npm install
+   ```
 
-```
+4. Ejecutar el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+5. Abrir en el navegador la URL indicada en la terminal (por defecto `http://localhost:5173`).
