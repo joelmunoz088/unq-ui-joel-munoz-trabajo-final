@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
-import { validateWordInDictionary } from './services/wordService';
+import {
+  validateWordInDictionary,
+  warmUpDictionaryApi,
+} from './services/wordService';
 import {
   validateChainLocally,
   getRequiredStartingLetter,
@@ -21,7 +24,7 @@ export function App() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [shakeKey, setShakeKey] = useState(0);
+  const [isShaking, setIsShaking] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(() =>
     getLeaderboard()
   );
@@ -35,14 +38,27 @@ export function App() {
     words.length > 0 ? getRequiredStartingLetter(words[words.length - 1]) : null;
   const isDangerTime = isGameStarted && timeLeft <= 5 && !isGameOver;
 
+  // Despertar el servidor de la API apenas carga la pantalla
+  useEffect(() => {
+    warmUpDictionaryApi();
+    inputRef.current?.focus();
+  }, []);
+
   const triggerError = (message: string) => {
     setErrorMsg(message);
-    setShakeKey((prev) => prev + 1);
+    setIsShaking(false);
+    window.requestAnimationFrame(() => {
+      setIsShaking(true);
+    });
+    window.setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 0);
   };
 
-  // Control del temporizador de 15 segundos
+  // Control del temporizador de 15 segundos (pausado solo durante la latencia de red)
   useEffect(() => {
-    if (!isGameStarted || isGameOver) return;
+    if (!isGameStarted || isGameOver || isValidating) return;
 
     const intervalId = window.setInterval(() => {
       setTimeLeft((prev) => {
@@ -57,7 +73,7 @@ export function App() {
     }, 1000);
 
     return () => window.clearInterval(intervalId);
-  }, [isGameStarted, isGameOver, words.length]);
+  }, [isGameStarted, isGameOver, isValidating, words.length]);
 
   // Guardar puntaje en el Top 10 al finalizar la partida
   useEffect(() => {
@@ -70,12 +86,12 @@ export function App() {
     }
   }, [isGameOver, score, words.length]);
 
-  // Mantener foco en el input mientras se juega
+  // Mantener foco en el input siempre activo
   useEffect(() => {
-    if (!isGameOver && !isValidating) {
+    if (!isGameOver) {
       inputRef.current?.focus();
     }
-  }, [isGameOver, isValidating, words]);
+  }, [isGameOver, words]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -108,6 +124,7 @@ export function App() {
       if (!isGameStarted) {
         setIsGameStarted(true);
       }
+      inputRef.current?.focus();
     } catch (err: unknown) {
       if (!gameOverRef.current) {
         triggerError(
@@ -131,7 +148,8 @@ export function App() {
     setIsGameOver(false);
     setIsValidating(false);
     setErrorMsg(null);
-    setTimeout(() => inputRef.current?.focus(), 0);
+    setIsShaking(false);
+    window.setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   return (
@@ -219,6 +237,8 @@ export function App() {
                   ? 'Arranca con tu 1ª palabra'
                   : isGameOver
                   ? '¡Tiempo agotado!'
+                  : isValidating
+                  ? 'Consultando diccionario...'
                   : 'Se reinicia al acertar'}
               </span>
             </div>
@@ -266,10 +286,10 @@ export function App() {
               </section>
             ) : (
               <section
-                key={shakeKey}
                 className={`playful-card input-card ${
-                  errorMsg ? 'shake-anim' : ''
+                  isShaking ? 'shake-anim' : ''
                 }`}
+                onAnimationEnd={() => setIsShaking(false)}
               >
                 <div className="prompt-banner">
                   {requiredLetter ? (
@@ -296,10 +316,10 @@ export function App() {
                     }
                     value={inputValue}
                     onChange={(e) => {
+                      if (isValidating) return;
                       setInputValue(e.target.value);
                       if (errorMsg) setErrorMsg(null);
                     }}
-                    disabled={isValidating}
                     autoComplete="off"
                     autoCorrect="off"
                     spellCheck={false}
